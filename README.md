@@ -1,2 +1,2 @@
-# CV
-Project for CV homework
+# Computer Vision
+Project for CV homeworks
