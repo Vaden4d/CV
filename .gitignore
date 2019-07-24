@@ -1,5 +1,4 @@
-csv_data/*.csv
-xml_data/*.xml
+image_retrieval/data/*.jpg
 .ipynb_checkpoints
 .env
 .idea
