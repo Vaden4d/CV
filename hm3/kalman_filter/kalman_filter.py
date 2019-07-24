@@ -6,42 +6,44 @@ from pynput.mouse import Controller
 import argparse
 
 class CalmanFilter(object):
-
+    '''CalmanFilter class with Calman Filter without conrol'''
     def __init__(self, waiting_time=0.1):
 
         self.waiting_time = waiting_time
         self.shape = (900, 1440, 3)
-
+        '''State Transition matrix'''
         self.A = np.array([[1.0, 0.0, self.waiting_time, 0.0],
                            [0.0, 1.0, 0.0, self.waiting_time],
                            [0.0, 0.0, 1.0, 0.0],
                            [0.0, 0.0, 0.0, 1.0]])
-
+        '''Measurement matrix'''
         self.H = np.array([[1.0, 0.0, 1.0, 0.0],
                            [0.0, 1.0, 0.0, 1.0],
                            [0.0, 0.0, 0.0, 0.0],
                            [0.0, 0.0, 0.0, 0.0]])
-
+        '''Action Uncertainty matrix'''
         self.Q = np.array([[0.0, 0.0, 0.0, 0.0],
                            [0.0, 0.0, 0.0, 0.0],
                            [0.0, 0.0, 0.1, 0.0],
                            [0.0, 0.0, 0.0, 0.1]])
 
+        #Sensor Noise matrix
         self.R = 0.1 * np.eye(4)
 
         self.P = np.zeros((4, 4))
 
+        # object for estimation the position of mouse
         self.mouse = Controller()
 
+        # initial prediction
         mouse_x, mouse_y = self.mouse.position
         self.x = np.array([mouse_x, mouse_y, 0, 0])
-
 
         self.measurements = []
         self.predictions = []
 
     def measure(self):
-
+        # measure position and estimate velocity
         position_x, position_y = self.mouse.position
 
         try:
@@ -57,12 +59,12 @@ class CalmanFilter(object):
                                           velocity_y]))
 
     def predict(self):
-
+        # prediction stage
         self.x = self.A @ self.x
         self.P = self.A @ self.P @ self.A.transpose() + self.Q
 
     def correct(self):
-
+        # correction stage
         S = self.H @ self.P @ self.H.transpose() + self.R
         K = self.P @ self.H.transpose() @ np.linalg.inv(S)
         y = self.measurements[-1] - self.H @ self.x
@@ -73,7 +75,7 @@ class CalmanFilter(object):
         self.predictions.append(self.x)
 
     def mouse_tracking(self, release_time, output_file=None):
-
+        # start tracking
         start = time()
         image = np.zeros(self.shape, np.uint8)
 
@@ -84,7 +86,7 @@ class CalmanFilter(object):
             out = cv2.VideoWriter(output_file, fourcc, fps, self.shape[:2][::-1])
 
         while True:
-
+            # wait some time for discretization of measurements
             sleep(self.waiting_time)
 
             self.measure()
