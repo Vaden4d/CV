@@ -153,10 +153,11 @@ def lucas_kanade_with_pyramids(video, initial_roi, eps=1e-1, n_deep=2, verbose=F
         old_frame = video[i-1]
         new_frame = video[i]
 
-        iters = 1
+
         params = np.zeros(6)
 
         for j in reversed(range(n_deep)):
+            iters = 1
             # scaling coefficient
             coeff = 2**j
             while True:
